@@ -1,0 +1,11 @@
+{
+  "name": "picotest",
+  "version": "1.0.0",
+  "description": "a testing framework for pico-8",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm test"
+  },
+  "author": "Josiah Savary <hello@jsavary.com> (http://jsavary.com)",
+  "license": "ISC"
+}
