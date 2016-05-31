@@ -7,5 +7,12 @@
     "test": "npm test"
   },
   "author": "Josiah Savary <hello@jsavary.com> (http://jsavary.com)",
-  "license": "ISC"
+  "license": "ISC",
+  "repository": {
+  	"type": "git",
+  	"url": "git+https://github.com/jozanza/picotest"
+  },
+  "bugs": {
+  	"url": "https://github.com/jozanza/picotest/issues"
+  }
 }
