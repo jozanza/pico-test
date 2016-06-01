@@ -209,21 +209,23 @@ function reducer (state, action) {
 function reporter (state, action) {
   let out
   let _ = action.payload
+  const format = ANSI.format
   switch (action.type) {
     case 'test':
       // payload: []
-      out = (
-        `\n\x1b[2d\x1b[2J\x1b[0m\x1b[1m🎮  [PICOTEST] ${_[0].toUpperCase()}\x1b[22m @ ${(new Date()).toLocaleString()}`
-      )
+      out =
+        format('cursor_reset', 'display_erase')() +
+        format('bold')(`🎮  [PICOTEST] ${_[0].toUpperCase()} `) +
+        `@ ${(new Date()).toLocaleString()}`
       break
     case 'test_end':
       out = `${state.assertCount} tests complete. ${state.assertCount - state.failCount} passing.\n`
-      if (!state.allPassed) out = `\n\n\x1b[31m\x1b[1m✖ ${out}\x1b[0m\x1b[22m`
-      else out = `\n\n\x1b[36m\x1b[1m✔ ${out}\x1b[0m\x1b[22m`
+      if (!state.allPassed) out = format('bold', 'red')(`\n\n✖ ${out}`)
+      else out = format('bold', 'green')(`\n\n✔ ${out}`)
       break
     case 'desc':
       // payload: [name:string]
-      out = `\n\n\x1b[0m+ ${_[0]}`
+      out = `\n\n+ ${_[0]}`
       break
     case 'it_end':
       const test = state.suites[state.suites.length - 1]
@@ -239,13 +241,46 @@ function reporter (state, action) {
         kase.name,
         ''// `(${!duration ? '<1' : duration}ms)\n`,
       ].join(' ') + fails
-      if (failed) out = `\x1b[31m${out}\x1b[0m`
-      else out = `\x1b[36m${out}\x1b[0m`
+      if (failed) out = format('red')(out)
+      else out = format('green')(out)
       break
     default: break
   }
   return out
 }
+
+/**
+ * Rolled my own tiny ANSI formatting lib :)
+ */
+const ANSI = {
+  _: {
+    // colors
+    reset: 0,
+    bold: 1,
+    normal_color: 22,
+    red: 31,
+    green: 36,
+    // CSI
+    cursor_reset: '1d',
+    display_erase: '2J'
+  },
+  esc: x => `\x1b[${x}${typeof x === 'number' ? 'm' : ''}`,
+  code: x => ANSI._[x],
+  codes () {
+    return Array.prototype.slice.call(arguments)
+      .map(compose(ANSI.esc, ANSI.code))
+      .join('')
+  },
+  unesc: x =>
+    (x || '') +
+    ANSI.esc(ANSI._.reset) +
+    ANSI.esc(ANSI._.normal_color),
+  formatRaw: x => y => ANSI.unesc(x + (y || ''))
+}
+ANSI.format = compose(
+  ANSI.formatRaw,
+  ANSI.codes
+)
 
 /**
  *
@@ -266,6 +301,27 @@ function curry (f, len) {
         const nextArgs = args.concat(_args.length ? _args : [undefined])
         return curryable.apply(this, nextArgs)
       }
+  }
+}
+
+/**
+ *
+ * A classic FP compose function
+ *
+ * @param  {Function[]} ...fs - any number of unary functions (except the last which may receive muliple args)
+ * @return {Function}           a composed function that chains all `fs` together from right to left
+ */
+function compose () {
+  const fs = Array.prototype.slice.call(arguments)
+  return function composed () {
+    const args = Array.prototype.slice.call(arguments)
+    let n = fs.length
+    let x
+    do {
+      --n
+      x = fs[n].apply(this, n < fs.length - 1 ? [x] : args)
+    } while (n)
+    return x
   }
 }
 
