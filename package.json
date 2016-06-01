@@ -4,7 +4,7 @@
   "description": "a testing framework for pico-8",
   "main": "index.js",
   "scripts": {
-    "test": "npm test"
+    "test": "node index test"
   },
   "author": "Josiah Savary <hello@jsavary.com> (http://jsavary.com)",
   "license": "ISC",

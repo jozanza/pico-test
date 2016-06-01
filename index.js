@@ -2,33 +2,39 @@
 'use strict'
 
 /**
- *
- * The interface that listens to stdin
- * and prints to stdout
- *
- * @type {Object}
+ * Rolled my own tiny ANSI formatting lib :)
  */
-require('readline').createInterface({
-  input: process.stdin,
-  output: process.stdout,
-  terminal: true
-})
-
-/**
- *
- * The immutable storage layer
- *
- * @type {Object}
- */
-const store = createStore({
-  title: '',
-  lastRun: null,
-  allPassed: true,
-  done: false,
-  assertCount: 0,
-  failCount: 0,
-  suites: []
-}, reducer)
+const ANSI = {
+  _: {
+    // font style
+    reset: 0,
+    bold: 1,
+    normal_color: 22,
+    // colors
+    red: 31,
+    yellow: 33,
+    green: 36,
+    // CSI
+    cursor_reset: '1d',
+    display_erase: '2J'
+  },
+  esc: x => `\x1b[${x}${typeof x === 'number' ? 'm' : ''}`,
+  code: x => ANSI._[x],
+  codes () {
+    return Array.prototype.slice.call(arguments)
+      .map(compose(ANSI.esc, ANSI.code))
+      .join('')
+  },
+  unesc: x =>
+    (x || '') +
+    ANSI.esc(ANSI._.reset) +
+    ANSI.esc(ANSI._.normal_color),
+  formatRaw: x => y => ANSI.unesc(x + (y || ''))
+}
+ANSI.format = compose(
+  ANSI.formatRaw,
+  ANSI.codes
+)
 
 /**
  *
@@ -70,24 +76,14 @@ const parseInput = curry((dispatch, write) => {
 
 /**
  *
- * The original stdout.write method
- *
- * @type {Function}
- */
-const write = mutateWrite(
-  process.stdout,
-  parseInput(store.dispatch)
-)
-
-/**
- *
  * Prints values returned from reporter to stdout
  *
- * @param  {Object}   getState - retrieves the current application state
- * @param  {Function} write    - prints to stdout
- * @param  {Object}   action   - the most recently dispatched action
+ * @param {Function} reporter - converts dispatched actions to printable strings
+ * @param {Object}   getState - retrieves the current application state
+ * @param {Function} write    - prints to stdout
+ * @param {Object}   action   - the most recently dispatched action
  */
-const printOutput = curry((getState, write, action) => {
+const printOutput = curry((reporter, getState, write, action) => {
   const out = reporter(getState(), action)
   write(typeof out === 'string' ? out : '')
 })
@@ -250,39 +246,6 @@ function reporter (state, action) {
 }
 
 /**
- * Rolled my own tiny ANSI formatting lib :)
- */
-const ANSI = {
-  _: {
-    // colors
-    reset: 0,
-    bold: 1,
-    normal_color: 22,
-    red: 31,
-    green: 36,
-    // CSI
-    cursor_reset: '1d',
-    display_erase: '2J'
-  },
-  esc: x => `\x1b[${x}${typeof x === 'number' ? 'm' : ''}`,
-  code: x => ANSI._[x],
-  codes () {
-    return Array.prototype.slice.call(arguments)
-      .map(compose(ANSI.esc, ANSI.code))
-      .join('')
-  },
-  unesc: x =>
-    (x || '') +
-    ANSI.esc(ANSI._.reset) +
-    ANSI.esc(ANSI._.normal_color),
-  formatRaw: x => y => ANSI.unesc(x + (y || ''))
-}
-ANSI.format = compose(
-  ANSI.formatRaw,
-  ANSI.codes
-)
-
-/**
  *
  * A classic currying function
  *
@@ -327,7 +290,159 @@ function compose () {
 
 /**
  *
- * Write to stdout whenever the state changes
+ * Runs tests
  *
+ * @param {Function} f - test callback, receives args desc:Function, it:Function, and assert:Function
  */
-store.subscribe(printOutput(store.getState, write))
+function test (f) {
+  const assert = require('assert')
+  const clear = ANSI.format('cursor_reset', 'display_erase')
+  const norm = ANSI.format('normal_color')
+  const bold = ANSI.format('bold')
+  const pass = ANSI.format('green')
+  const fail = ANSI.format('red')
+  const pend = ANSI.format('yellow')
+  let passing = 0
+  let pending = 0
+  const desc = (s, f) => {
+    console.log(norm(`\n+ ${s}`))
+    f()
+  }
+  const it = (s, f, e) => assert.doesNotThrow(() => {
+    if (!f) {
+      ++pending
+      return console.log(pend(`  - it ${s} (pending)`))
+    }
+    try {
+      f()
+      ++passing
+      console.log(pass(`  ✔ it ${s}`))
+    } catch (err) {
+      console.log(fail(`  ✖ it ${s}`))
+      throw err
+    }
+  }, e)
+  console.log(clear())
+  console.log(bold('Running tests...'))
+  f(desc, it, assert)
+  console.log(bold(`\n...done! ${passing + pending} total tests. ${passing} passing. ${pending} pending.`))
+  console.log(`\nCompleted @ ${(new Date()).toLocaleString()}\n`)
+}
+
+/**
+ *
+ * Listens for inupt from pico-8
+ *
+ * @param {Object} store - an interface for managing the app state
+ */
+function run (store) {
+  const parse = parseInput(store.dispatch)
+  const write = mutateWrite(process.stdout, parse)
+  const print = printOutput(reporter, store.getState, write)
+  const opts = {
+    input: process.stdin,
+    output: process.stdout,
+    terminal: true
+  }
+  // Write to stdout whenever the state changes
+  store.subscribe(print)
+  // read from stdin and write to stdout in tty mode
+  require('readline').createInterface(opts)
+}
+
+/**
+ *
+ * CLI args
+ *
+ * @type {String[]}
+ */
+const argv = process.argv
+
+/**
+ *
+ * Is running in TEST_MODE
+ *
+ * @type {Boolean}
+ */
+const TEST_MODE = !!argv.filter(x => x.toLowerCase() === 'test').length
+
+/**
+ * Do Stuff >:3
+ */
+if (!TEST_MODE) {
+  run(
+    createStore({
+      title: '',
+      lastRun: null,
+      allPassed: true,
+      done: false,
+      assertCount: 0,
+      failCount: 0,
+      suites: []
+    }, reducer)
+  )
+} else {
+  test((desc, it, assert) => {
+    desc('parseInput()', () => {
+      it('should log strean data while a is not being parsed')
+      it('should not stream data while a command is being parsed')
+      it('should dispatch an action when command parsing is done')
+    })
+    desc('printOutput()', () => {
+      it('should log an action')
+    })
+    desc('createStore()', () => {
+      it('should return a store object')
+    })
+    desc('store', () => {
+      it('should get the current state')
+      it('should dispatch actions to the reducer')
+      it('should add subscribers')
+      it('should remove subscribers')
+    })
+    desc('mutateWrite()', () => {
+      it('should mutate stream\'s write method')
+      it('should return stream\'s original write method')
+    })
+    desc('reducer()', () => {
+      it('should handle "test" actions')
+      it('should handle "test_end" actions')
+      it('should handle "desc" actions')
+      it('should handle "it" actions')
+      it('should handle "perf" actions')
+      it('should handle "perf_end" actions')
+      it('should handle "assert" actions')
+    })
+    desc('reporter()', () => {
+      it('should report on "test" actions')
+      it('should report on "test_end" actions')
+      it('should report on "desc" actions')
+      it('should report on "it_end" actions')
+    })
+    desc('ANSI', () => {
+      it('should escape codes')
+      it('should return correct code')
+      it('should return list of escaped codes')
+      it('should format raw')
+      it('should create a formatter function')
+      it('should apply correct formatting')
+    })
+    desc('curry()', () => {
+      it('should return a function')
+      it('should call function when last arg is passed')
+      it('should call function when specified num of args is passed')
+      it('should return same value as non-curried version')
+    })
+    desc('compose()', () => {
+      it('should return a function', () => {
+        const v = compose(() => {}, () => {})
+        assert(typeof v === 'function')
+      }, TypeError)
+      it('should accept multiple args', () => {
+        const v = compose(x => x * 2, (x, y, z) => x + y + z)
+        assert(v(1, 2, 3) === 12)
+      })
+      it('should return same value as non-composed version')
+    })
+  })
+}
