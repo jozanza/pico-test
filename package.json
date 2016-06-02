@@ -1,7 +1,7 @@
 {
   "name": "pico-test",
-  "version": "1.0.0",
-  "description": "a testing framework for pico-8",
+  "version": "0.0.1",
+  "description": "⚡ PICO-8 testing framework",
   "main": "index",
   "scripts": {
     "test": "node index test"

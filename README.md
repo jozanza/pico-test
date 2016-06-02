@@ -1,4 +1,6 @@
-<p align="center">
+# pico-test
+
+<p>
   <a href="https://www.npmjs.com/package/pico-test">
     <img alt="npm version" src="https://img.shields.io/npm/v/pico-test.svg" />
   </a>
@@ -10,47 +12,53 @@
   </a>
 </p>
 
-# pico-test
+> **Note:** This project is still in its initial stages, so I'd love feedback about the API and issue reports.
+
+PICO-8 is great but debugging your code in this little vm can be a chore.  
+
+If you're tired of riddling your carts with `printh`s or have given up on test-driven development, this tool should help you out.
 
 ### Installation
 
     npm i -g pico-test
 
-It is also directly available for [download](https://...)
-
 ### Usage
 
- First, run Pico-8 from the command line and pipe its output to `pico-test`.
-
-    path/to/pico-8 | pico-test
-
- **Next, copy/paste the following snippet into the cart you wish to test**:
+Copy/paste the following snippet into the cart you wish to test:
 
 ```lua
 function test(title,f)
- local desc=function(msg,f)
-  printh('⚡:desc:'..msg)
-  f()
- end
- local it=function(msg,f)
-  printh('⚡:it:'..msg)
-  local xs={f()}
-  for i=1,#xs do
-   if xs[i] == true then
-    printh('⚡:assert:true')
-   else
-    printh('⚡:assert:false')
-   end
+local desc=function(msg,f)
+ printh('⚡:desc:'..msg)
+ f()
+end
+local it=function(msg,f)
+ printh('⚡:it:'..msg)
+ local xs={f()}
+ for i=1,#xs do
+  if xs[i] == true then
+   printh('⚡:assert:true')
+  else
+   printh('⚡:assert:false')
   end
-  printh('⚡:it_end')
  end
- printh('⚡:test:'..title)
- f(desc,it)
- printh('⚡:test_end')
+ printh('⚡:it_end')
+end
+printh('⚡:test:'..title)
+f(desc,it)
+printh('⚡:test_end')
 end
 ```
 
-Now, you're ready to start writing tests!
+Next, be sure PICO-8 is aliased properly in your terminal. You may have to do something like the following:
+
+    alias pico-8='/Applications/PICO-8.app/Contents/MacOS/pico8'
+
+Last, run Pico-8 from your terminal and pipe its output to `pico-test`.
+
+    pico-8 | pico-test
+
+Each time your run your cart, test results will be printed to `stdout`. Now, you just have to write some tests! :)
 
 ### API
 
@@ -153,3 +161,7 @@ test('math functions', function(desc,it)
 
 end)
 ```
+
+### License
+
+Copyright (c) 2015 Josiah Savary. Made available under The MIT License (MIT).
