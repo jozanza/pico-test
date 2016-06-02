@@ -14,6 +14,8 @@
 
 > **Note:** This project is still in its initial stages, so I'd love feedback about the API and issue reports.
 
+### Intro
+
 PICO-8 is great but debugging your code in this little vm can be a chore.  
 
 If you're tired of riddling your carts with `printh`s or have given up on test-driven development, this tool should help you out.
