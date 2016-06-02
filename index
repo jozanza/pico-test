@@ -211,7 +211,7 @@ function reporter (state, action) {
       // payload: []
       out =
         format('cursor_reset', 'display_erase')() +
-        format('bold')(`🎮  [PICOTEST] ${_[0].toUpperCase()} `) +
+        format('bold')(`🎮  [PICO-TEST] ${_[0].toUpperCase()} `) +
         `@ ${(new Date()).toLocaleString()}`
       break
     case 'test_end':
@@ -290,7 +290,7 @@ function compose () {
 
 /**
  *
- * Runs tests
+ * Rolled a mini testing framework too to avoid dependencies :)
  *
  * @param {Function} f - test callback, receives args desc:Function, it:Function, and assert:Function
  */

@@ -1,0 +1,20 @@
+language: node_js
+
+node_js:
+  - "4.0"
+  - "5.0"
+  - "6.0"
+
+branches:
+  only:
+    - master
+
+notifications:
+  email:
+    on_success: change
+    on_failure: always
+
+script:
+  - npm run -s lint
+  - npm run -s test
+  - npm run -s update-coverage
