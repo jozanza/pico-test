@@ -3,16 +3,30 @@
   "version": "0.0.1",
   "description": "⚡ PICO-8 testing framework",
   "main": "index",
+  "engines": {
+    "node": ">=4.0.0",
+    "npm": ">=3.0.0"
+  },
   "scripts": {
     "test": "node index test"
   },
+  "preferGlobal": "true",
+  "bin": {
+    "pico-test" : "index"
+  },
   "author": "Josiah Savary <hello@jsavary.com> (http://jsavary.com)",
-  "license": "ISC",
+  "license": "MIT",
+  "homepage": "https://github.com/jozanza/pico-test",
   "repository": {
   	"type": "git",
   	"url": "git+https://github.com/jozanza/pico-test"
   },
   "bugs": {
   	"url": "https://github.com/jozanza/pico-test/issues"
-  }
+  },
+  "keywords": [
+    "testing",
+    "pico8",
+    "pico-8"
+  ]
 }
