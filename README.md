@@ -5,8 +5,8 @@
   <a href="https://travis-ci.org/jozanza/pico-test">
     <img alt="build status" src="https://travis-ci.org/jozanza/pico-test.svg" />
   </a>
-  <a href="https://www.npmjs.com/package/pico-test">
-    <img alt="code style" src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg)](http://standardjs.com/" />
+  <a href="http://standardjs.com/">
+    <img alt="code style"  src="https://img.shields.io/badge/code%20style-standard-brightgreen.svg" />
   </a>
 </p>
 
