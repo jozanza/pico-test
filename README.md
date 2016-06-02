@@ -24,7 +24,7 @@ If you're tired of riddling your carts with `printh`s or have given up on test-d
 
     npm i -g pico-test
 
-<sup><sub>or you can download it directly from the [releases section](https://github.com/jozanza/pico-test/releases)</sup></sub>
+> or you can download it directly from the [releases section](https://github.com/jozanza/pico-test/releases)
 
 ### Usage
 
