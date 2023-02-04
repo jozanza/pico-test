@@ -33,24 +33,24 @@ Copy/paste the following snippet into the cart you wish to test:
 ```lua
 function test(title,f)
 local desc=function(msg,f)
- printh('⚡:desc:'..msg)
+ printh('✽:desc:'..msg)
  f()
 end
 local it=function(msg,f)
- printh('⚡:it:'..msg)
+ printh('✽:it:'..msg)
  local xs={f()}
  for i=1,#xs do
   if xs[i] == true then
-   printh('⚡:assert:true')
+   printh('✽:assert:true')
   else
-   printh('⚡:assert:false')
+   printh('✽:assert:false')
   end
  end
- printh('⚡:it_end')
+ printh('✽:it_end')
 end
-printh('⚡:test:'..title)
+printh('✽:test:'..title)
 f(desc,it)
-printh('⚡:test_end')
+printh('✽:test_end')
 end
 ```
 

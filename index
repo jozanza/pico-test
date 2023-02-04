@@ -50,7 +50,7 @@ const parseInput = curry((dispatch, write) => {
   let line = ''
   let concat = false
   return x => {
-    if (x[0] === '⚡') concat = true
+    if (x[0] === '✽') concat = true
     if (!concat) write(x)
     else {
       line += x
