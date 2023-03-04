@@ -28,29 +28,31 @@ If you're tired of riddling your carts with `printh`s or have given up on test-d
 
 ### Usage
 
-Copy/paste the following snippet into the cart you wish to test:
+Copy/paste `testrunner.lua` into the cart you wish to test:
 
 ```lua
-function test(title,f)
-local desc=function(msg,f)
- printh('✽:desc:'..msg)
- f()
-end
-local it=function(msg,f)
- printh('✽:it:'..msg)
- local xs={f()}
- for i=1,#xs do
-  if xs[i] == true then
-   printh('✽:assert:true')
-  else
-   printh('✽:assert:false')
-  end
+test = function (title,f)
+ local desc=function(msg,f)
+  printh('✽:desc:'..msg)
+  f()
  end
- printh('✽:it_end')
-end
-printh('✽:test:'..title)
-f(desc,it)
-printh('✽:test_end')
+ local it=function(msg,f)
+  printh('✽:it:'..msg)
+  local xs=f and {f()} or {}
+  if #xs>0 then
+   for i=1,#xs do
+    if xs[i]==true then
+     printh('✽:assert:true')
+    else
+     printh('✽:assert:false')
+    end
+   end
+  end
+  printh('✽:it_end')
+ end
+ printh('✽:test:'..title)
+ f(desc,it)
+ printh('✽:test_end')
 end
 ```
 
