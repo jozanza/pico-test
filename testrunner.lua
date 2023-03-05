@@ -22,6 +22,8 @@ test = function (title,f)
      printh('✽:assert:false')
     end
    end
+  else
+   printh('✽:pend:pend')
   end
   printh('✽:it_end')
  end
