@@ -50,7 +50,7 @@ const parseInput = curry((dispatch, write) => {
   let line = ''
   let concat = false
   return x => {
-    if (x[0] === '⚡') concat = true
+    if (x[0] === '✽') concat = true
     if (!concat) write(x)
     else {
       line += x
@@ -189,6 +189,9 @@ function reducer (state, action) {
         nextState.failCount += 1
       }
       break
+    case 'pend':
+      nextState.suites[i].cases[j].assertions.push(_[0])
+      break
     default: break
   }
   return nextState
@@ -228,16 +231,28 @@ function reporter (state, action) {
       const kase = test.cases[test.cases.length - 1]
       // const duration = kase.stopped - kase.started
       const failed = kase.assertions.reduce((next, x) => next || !x, false)
+      const pended = kase.assertions[0] == 'pend'
       const fails = kase.assertions.map((passed, i) => passed
         ? ''
         : `\n    • failed assertion #${i + 1}`
       ).join('')
-      out = '\n  ' + [
-        (failed ? '✖' : '✔'),
-        kase.name,
-        ''// `(${!duration ? '<1' : duration}ms)\n`,
-      ].join(' ') + fails
+      if (pended) {
+        out = '\n  ' + [
+          '-',
+          kase.name,
+          '(pending)',
+          ''// `(${!duration ? '<1' : duration}ms)\n`,
+        ].join(' ') + fails
+      } else {
+        out = '\n  ' + [
+          (failed ? '✖' : '✔'),
+          kase.name + ' (+' + kase.assertions.length + ')',
+          '',
+          ''// `(${!duration ? '<1' : duration}ms)\n`,
+        ].join(' ') + fails
+      }
       if (failed) out = format('red')(out)
+      else if (pended) out = format('yellow')(out)
       else out = format('green')(out)
       break
     default: break
